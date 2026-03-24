@@ -105,18 +105,18 @@ body {
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
-  padding: 24px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  border-right: 1px solid var(--border);
-  background: var(--bg-2);
-  backdrop-filter: blur(40px);
   position: sticky;
   top: 0;
   height: 100vh;
+  z-index: 50;
+  display: flex; flex-direction: column;
+  padding: 24px 16px;
+  gap: 20px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-2);
+  backdrop-filter: blur(40px);
   overflow-y: auto;
-  transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .logo { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
@@ -643,12 +643,12 @@ body {
   :root { --sidebar-w: 0px; }
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
-    width: 260px; z-index: 200;
+    width: 260px; height: 100vh; z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     pointer-events: none;
   }
-  .sidebar.open { pointer-events: auto; }
+  .sidebar.open { pointer-events: auto; transform: translateX(0); }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,0.4); }
   .main { padding: 16px 18px 24px; padding-top: 64px; }
   .mobile-header {
@@ -798,8 +798,9 @@ body {
   </button>
 </div>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
-
-<aside class="sidebar" id="sidebar">
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
     <div class="logo">
       <div class="logo-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -852,7 +853,6 @@ body {
     </div>
   </aside>
 
-<div class="shell">
   <!-- MAIN -->
   <main class="main">
 
@@ -1102,8 +1102,8 @@ body {
 // ╔═══════════════════════════════════════════════════════╗
 // ║  CONFIGURACIÓN — pon aquí tus credenciales de Supabase ║
 // ╚═══════════════════════════════════════════════════════╝
-var SUPABASE_URL      = 'https://fqahszywvrblwhdikbwb.supabase.co';       // ← pega aquí tu Project URL
-var SUPABASE_ANON_KEY = 'sb_publishable_VMEhLLIu_gEcy2Iym0dirA_SGdaRFZ-';  // ← pega aquí tu anon public key
+var SUPABASE_URL      = 'YOUR_SUPABASE_URL';       // ← pega aquí tu Project URL
+var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // ← pega aquí tu anon public key
 // ════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════

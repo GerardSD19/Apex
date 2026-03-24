@@ -678,6 +678,13 @@ body {
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- ═══ SUPABASE LOGIN SCREEN ═══ -->
+<!-- Loading overlay -->
+<div id="sbLoadOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);align-items:center;justify-content:center;">
+  <div style="text-align:center;">
+    <div style="width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--ai);animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+    <div style="font-size:13px;color:var(--text-3);font-family:'Inter',sans-serif;">Cargando…</div>
+  </div>
+</div>
 <div id="sbLoginScreen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;">
   <div id="sbAppShell">
 <div class="bg-mesh"></div>
@@ -2065,38 +2072,69 @@ async function sbHandleSignOut() {
 // We do this AFTER the app's own window.onload is defined,
 // so we can call the original and add auth on top.
 window.addEventListener('load', async function() {
-  sbInit();
+  var loadOverlay = document.getElementById('sbLoadOverlay');
 
-  // Handle OAuth callback (Google login returns here with tokens in URL)
-  if (_sb) {
-    try { await _sb.auth.getSession(); } catch(e) {}
+  function hideOverlay() {
+    if (loadOverlay) loadOverlay.style.display = 'none';
+  }
+
+  // Safety timeout: if Supabase hangs, show app after 4 seconds
+  var safetyTimer = setTimeout(function() {
+    console.warn('Supabase timeout — running as local app');
+    hideOverlay();
+  }, 4000);
+
+  try {
+    if (loadOverlay) loadOverlay.style.display = 'flex';
+
+    sbInit();
+
+    // If not configured, run as local
+    if (!_sb || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+      clearTimeout(safetyTimer);
+      hideOverlay();
+      return;
+    }
+
+    // Handle OAuth callback (Google redirect)
+    try { await Promise.race([
+      _sb.auth.getSession(),
+      new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('timeout')); }, 3000); })
+    ]); } catch(e) { console.warn('getSession:', e.message); }
+
     await sbHandleCallback();
+    await sbGetUser();
+
+    clearTimeout(safetyTimer);
+    hideOverlay();
+
+    if (!_sbUser) {
+      sbShowLogin();
+      return;
+    }
+
+    // Logged in
+    try { await Promise.race([
+      sbPullAll(),
+      new Promise(function(res){ setTimeout(res, 3000); })
+    ]); } catch(e) {}
+
+    sbHideLogin();
+    sbUpdateUserBar();
+
+    try { loadCfg(); } catch(e) {}
+    try { applyTheme(); } catch(e) {}
+    try { updateStravaUI(); } catch(e) {}
+    try { loadCachedActs(); } catch(e) {}
+    try { updateWeekNav(); } catch(e) {}
+    try { loadWeekPlan(); } catch(e) {}
+    try { refreshDash(); } catch(e) {}
+
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    clearTimeout(safetyTimer);
+    hideOverlay();
   }
-
-  await sbGetUser();
-
-  if (!_sbUser) {
-    // Not logged in — show login, hide app
-    sbShowLogin();
-    // Hide the main app shell (it rendered already via onload)
-    var a = document.getElementById('sbAppShell');
-    if (a) a.style.display = 'none';
-    return;
-  }
-
-  // Logged in — pull cloud data first, then app already init'd via onload
-  await sbPullAll();
-  sbHideLogin();
-  sbUpdateUserBar();
-
-  // Re-run init with fresh cloud data
-  try { loadCfg(); } catch(e) {}
-  try { applyTheme(); } catch(e) {}
-  try { updateStravaUI(); } catch(e) {}
-  try { loadCachedActs(); } catch(e) {}
-  try { updateWeekNav(); } catch(e) {}
-  try { loadWeekPlan(); } catch(e) {}
-  try { refreshDash(); } catch(e) {}
 });
 
 

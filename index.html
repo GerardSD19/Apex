@@ -2071,70 +2071,58 @@ async function sbHandleSignOut() {
 // ── Override window.onload ───────────────────────────────────────────
 // We do this AFTER the app's own window.onload is defined,
 // so we can call the original and add auth on top.
-window.addEventListener('load', async function() {
-  var loadOverlay = document.getElementById('sbLoadOverlay');
+window.addEventListener('load', function() {
+  var overlay = document.getElementById('sbLoadOverlay');
+  function hide() { if (overlay) overlay.style.display = 'none'; }
 
-  function hideOverlay() {
-    if (loadOverlay) loadOverlay.style.display = 'none';
+  // Always hide overlay after 2s max no matter what
+  setTimeout(hide, 2000);
+
+  sbInit();
+
+  // If Supabase not configured — just hide overlay, app already running
+  if (!_sb || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+    hide();
+    return;
   }
 
-  // Safety timeout: if Supabase hangs, show app after 4 seconds
-  var safetyTimer = setTimeout(function() {
-    console.warn('Supabase timeout — running as local app');
-    hideOverlay();
-  }, 4000);
+  // Show overlay while checking auth
+  if (overlay) overlay.style.display = 'flex';
 
-  try {
-    if (loadOverlay) loadOverlay.style.display = 'flex';
-
-    sbInit();
-
-    // If not configured, run as local
-    if (!_sb || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-      clearTimeout(safetyTimer);
-      hideOverlay();
-      return;
-    }
-
-    // Handle OAuth callback (Google redirect)
-    try { await Promise.race([
-      _sb.auth.getSession(),
-      new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('timeout')); }, 3000); })
-    ]); } catch(e) { console.warn('getSession:', e.message); }
-
-    await sbHandleCallback();
-    await sbGetUser();
-
-    clearTimeout(safetyTimer);
-    hideOverlay();
-
-    if (!_sbUser) {
+  // Check session with 2s timeout
+  var sessionDone = false;
+  function onSessionResult(user) {
+    if (sessionDone) return;
+    sessionDone = true;
+    hide();
+    if (!user) {
       sbShowLogin();
-      return;
+    } else {
+      _sbUser = user;
+      sbHideLogin();
+      sbUpdateUserBar();
+      sbPullAll().then(function() {
+        try { loadCfg(); } catch(e) {}
+        try { applyTheme(); } catch(e) {}
+        try { updateStravaUI(); } catch(e) {}
+        try { loadCachedActs(); } catch(e) {}
+        try { updateWeekNav(); } catch(e) {}
+        try { loadWeekPlan(); } catch(e) {}
+        try { refreshDash(); } catch(e) {}
+      }).catch(function() {
+        try { refreshDash(); } catch(e) {}
+      });
     }
-
-    // Logged in
-    try { await Promise.race([
-      sbPullAll(),
-      new Promise(function(res){ setTimeout(res, 3000); })
-    ]); } catch(e) {}
-
-    sbHideLogin();
-    sbUpdateUserBar();
-
-    try { loadCfg(); } catch(e) {}
-    try { applyTheme(); } catch(e) {}
-    try { updateStravaUI(); } catch(e) {}
-    try { loadCachedActs(); } catch(e) {}
-    try { updateWeekNav(); } catch(e) {}
-    try { loadWeekPlan(); } catch(e) {}
-    try { refreshDash(); } catch(e) {}
-
-  } catch(e) {
-    console.error('Supabase init error:', e);
-    clearTimeout(safetyTimer);
-    hideOverlay();
   }
+
+  // Timeout fallback
+  setTimeout(function() { onSessionResult(null); }, 2000);
+
+  // Try to get session
+  _sb.auth.getSession().then(function(res) {
+    var user = res && res.data && res.data.session && res.data.session.user;
+    onSessionResult(user || null);
+  }).catch(function() { onSessionResult(null); });
 });
 
 

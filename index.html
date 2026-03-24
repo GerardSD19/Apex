@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
+
 /* ═══════════════════════════════════════════
    TOKENS — DARK
 ═══════════════════════════════════════════ */
@@ -673,41 +675,91 @@ body {
   .mobile-header { display: none; }
   .sidebar-overlay { display: none !important; }
 }
+
+/* LOGIN */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: var(--r); padding: 36px 32px;
+  width: 100%; max-width: 400px;
+  display: flex; flex-direction: column; gap: 18px;
+  box-shadow: var(--shadow);
+}
+.login-logo-name {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px;
+  letter-spacing: 3px; text-align: center;
+  background: linear-gradient(90deg, var(--run), var(--gym));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.login-logo-tag { font-size: 11px; color: var(--text-3); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+.login-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; text-align: center; }
+.login-divider { display: flex; align-items: center; gap: 10px; }
+.login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.login-divider span { font-size: 11px; color: var(--text-3); }
+.login-input {
+  padding: 11px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+  outline: none; width: 100%; transition: border-color 0.15s;
+}
+.login-input:focus { border-color: var(--ai-b); }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 12px; border-radius: var(--r-sm);
+  border: 1px solid var(--border-2); background: var(--surface-2);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all 0.15s; width: 100%;
+}
+.btn-google:hover { background: var(--surface-3); }
+.login-row { display: flex; gap: 8px; }
+.user-pill {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-radius: var(--r-sm); background: var(--surface);
+  border: 1px solid var(--border); font-size: 11px; color: var(--text-2);
+  margin-bottom: 8px;
+}
+.user-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.user-pill-email { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-pill-out {
+  padding: 2px 7px; border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-3); font-size: 10px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.user-pill-out:hover { color: var(--text); border-color: var(--border-2); }
+
 </style>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<!-- ═══ SUPABASE LOGIN SCREEN ═══ -->
-<!-- Loading overlay -->
-<div id="sbLoadOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);align-items:center;justify-content:center;">
-  <div style="text-align:center;">
-    <div style="width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--ai);animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-    <div style="font-size:13px;color:var(--text-3);font-family:'Inter',sans-serif;">Cargando…</div>
-  </div>
-</div>
-<div id="sbLoginScreen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;">
-  <div id="sbAppShell">
-<div class="bg-mesh"></div>
-  <div style="position:relative;z-index:1;background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--r);padding:36px 32px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow);">
-    <div style="text-align:center;">
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:3px;background:linear-gradient(90deg,var(--run),var(--gym));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">APEX</div>
-      <div style="font-size:11px;color:var(--text-3);letter-spacing:2px;text-transform:uppercase;margin-top:2px;">Training OS</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="bg-mesh"></div>
+  <div class="login-card" style="position:relative;z-index:1">
+    <div>
+      <div class="login-logo-name">APEX</div>
+      <div class="login-logo-tag">Training OS</div>
     </div>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;text-align:center;">Inicia sesión</div>
-    <button onclick="sbHandleGoogleLogin()" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:var(--r-sm);border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;width:100%;transition:all 0.15s;">
+    <div class="login-title">Inicia sesión para continuar</div>
+    <button class="btn-google" onclick="handleGoogleLogin()">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continuar con Google
     </button>
-    <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:11px;color:var(--text-3);">o con email</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
+    <div class="login-divider"><span>o con email</span></div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <input id="sbEmail" type="email" placeholder="tu@email.com" style="padding:11px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;width:100%;">
-      <input id="sbPass" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')sbHandleEmailLogin()" style="padding:11px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;width:100%;">
+      <input class="login-input" id="loginEmail" type="email" placeholder="tu@email.com">
+      <input class="login-input" id="loginPass" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')handleEmailLogin()">
     </div>
-    <div style="display:flex;gap:8px;">
-      <button id="sbBtnLogin" onclick="sbHandleEmailLogin()" style="flex:1;padding:11px;border-radius:var(--r-sm);border:none;background:linear-gradient(135deg,var(--run),var(--gym));color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Entrar</button>
-      <button onclick="sbHandleSignUp()" style="flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Registrarse</button>
+    <div class="login-row">
+      <button class="btn btn-plan" id="btnEmailLogin" onclick="handleEmailLogin()" style="flex:1;justify-content:center;">Entrar</button>
+      <button class="btn btn-ghost" onclick="handleEmailSignup()" style="flex:1;justify-content:center;">Registrarse</button>
     </div>
-    <div style="font-size:11px;color:var(--text-3);text-align:center;line-height:1.6;">Tus datos se sincronizan entre todos tus dispositivos.</div>
+    <div style="font-size:11px;color:var(--text-3);text-align:center;line-height:1.6;">Tus datos se sincronizan entre dispositivos.</div>
   </div>
 </div>
 
@@ -724,8 +776,8 @@ body {
   </button>
 </div>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
-<div class="shell">
-  <aside class="sidebar" id="sidebar">
+
+<aside class="sidebar" id="sidebar">
     <div class="logo">
       <div class="logo-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -773,6 +825,7 @@ body {
     </div>
   </aside>
 
+<div class="shell">
   <!-- MAIN -->
   <main class="main">
 
@@ -1017,7 +1070,229 @@ body {
 </div>
 
 
+
 <script>
+// ═══════════════════════════════════════════════════════════════
+// SUPABASE LAYER — replaces localStorage with Supabase
+// All functions mirror the localStorage API surface exactly
+// ═══════════════════════════════════════════════════════════════
+
+var SUPA = https://fqahszywvrblwhdikbwb.supabase.co;       // Supabase client
+var SUPA_USER = sb_publishable_VMEhLLIu_gEcy2Iym0dirA_SGdaRFZ-;  // current auth user
+
+// ── Init ────────────────────────────────────────────────────────
+function initSupabase(url, anonKey) {
+  SUPA = window.supabase.createClient(url, anonKey);
+}
+
+// ── Auth ────────────────────────────────────────────────────────
+function supaSignInGoogle() {
+  return SUPA.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+}
+
+function supaSignInEmail(email, password) {
+  return SUPA.auth.signInWithPassword({ email: email, password: password });
+}
+
+function supaSignUpEmail(email, password) {
+  return SUPA.auth.signUp({ email: email, password: password });
+}
+
+function supaSignOut() {
+  return SUPA.auth.signOut();
+}
+
+async function supaGetUser() {
+  var res = await SUPA.auth.getUser();
+  SUPA_USER = res.data && res.data.user ? res.data.user : null;
+  return SUPA_USER;
+}
+
+async function supaHandleAuthCallback() {
+  var res = await SUPA.auth.getSession();
+  if (res.data && res.data.session) {
+    SUPA_USER = res.data.session.user;
+    return SUPA_USER;
+  }
+  return null;
+}
+
+// ── DB helpers ──────────────────────────────────────────────────
+// Table: apex_user_data
+// Columns: user_id (text PK), key (text PK), value (jsonb), updated_at (timestamptz)
+// Primary key: (user_id, key)
+
+async function dbGet(key) {
+  if (!SUPA || !SUPA_USER) return null;
+  var res = await SUPA
+    .from('apex_user_data')
+    .select('value')
+    .eq('user_id', SUPA_USER.id)
+    .eq('key', key)
+    .maybeSingle();
+  if (res.error || !res.data) return null;
+  return res.data.value;
+}
+
+async function dbSet(key, value) {
+  if (!SUPA || !SUPA_USER) return;
+  await SUPA
+    .from('apex_user_data')
+    .upsert({
+      user_id: SUPA_USER.id,
+      key: key,
+      value: value,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,key' });
+}
+
+async function dbGetAllPlans() {
+  if (!SUPA || !SUPA_USER) return [];
+  var res = await SUPA
+    .from('apex_user_data')
+    .select('key, value')
+    .eq('user_id', SUPA_USER.id)
+    .like('key', 'apex_plan_%')
+    .neq('key', 'apex_plan');
+  if (res.error || !res.data) return [];
+  return res.data;
+}
+
+// ── Storage abstraction (mirrors localStorage) ──────────────────
+var DB_CACHE = {};  // in-memory cache to avoid redundant reads
+
+async function storeGet(key) {
+  if (key in DB_CACHE) return DB_CACHE[key];
+  var val = await dbGet(key);
+  if (val !== null) DB_CACHE[key] = typeof val === 'string' ? val : JSON.stringify(val);
+  return DB_CACHE[key] || null;
+}
+
+async function storeSet(key, value) {
+  DB_CACHE[key] = value;
+  var parsed;
+  try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
+  await dbSet(key, parsed);
+}
+
+async function storeGetAllPlanKeys() {
+  var rows = await dbGetAllPlans();
+  return rows.map(function(r) { return r.key; });
+}
+
+async function storeGetPlan(key) {
+  var rows = await dbGetAllPlans();
+  var row = rows.find(function(r) { return r.key === key; });
+  if (!row) return null;
+  return typeof row.value === 'string' ? row.value : JSON.stringify(row.value);
+}
+
+// Pull all user data from Supabase into localStorage
+function pullFromSupabase() {
+  if (!SUPA || !SUPA_USER) return Promise.resolve();
+  return SUPA.from('apex_user_data').select('key,value').eq('user_id', SUPA_USER.id)
+    .then(function(res) {
+      if (res.error || !res.data) return;
+      res.data.forEach(function(row) {
+        var val = typeof row.value === 'string' ? row.value : JSON.stringify(row.value);
+        localStorage.setItem(row.key, val);
+      });
+    }).catch(function() {});
+}
+
+// Auto-sync localStorage writes to Supabase
+var _origSet = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(key, value) {
+  _origSet(key, value);
+  if (SUPA_USER && key.indexOf('apex_') === 0) {
+    var parsed; try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
+    SUPA.from('apex_user_data').upsert(
+      { user_id: SUPA_USER.id, key: key, value: parsed, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,key' }
+    ).catch(function() {});
+  }
+};
+
+
+// ═══ APP ═══
+
+// ═══════════════════════════════════════════
+// SUPABASE CONFIG — set these from env
+// ═══════════════════════════════════════════
+var SUPABASE_URL = typeof _SUPABASE_URL !== 'undefined' ? _SUPABASE_URL : 'YOUR_SUPABASE_URL';
+var SUPABASE_ANON_KEY = typeof _SUPABASE_ANON_KEY !== 'undefined' ? _SUPABASE_ANON_KEY : 'YOUR_SUPABASE_ANON_KEY';
+
+// ═══════════════════════════════════════════
+// AUTH UI
+// ═══════════════════════════════════════════
+function showLoginScreen() {
+  var app = document.getElementById('appShell');
+  var login = document.getElementById('loginScreen');
+  if (app) app.style.display = 'none';
+  if (login) login.style.display = 'flex';
+}
+
+function hideLoginScreen() {
+  var app = document.getElementById('appShell');
+  var login = document.getElementById('loginScreen');
+  if (app) app.style.display = '';
+  if (login) login.style.display = 'none';
+}
+
+function updateUserUI() {
+  var userEl = document.getElementById('userEmail');
+  if (userEl && SUPA_USER) userEl.textContent = SUPA_USER.email || 'Usuario';
+}
+
+async function handleGoogleLogin() {
+  var res = await supaSignInGoogle();
+  if (res.error) toast('Error: ' + res.error.message, 'error');
+}
+
+async function handleEmailLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { toast('Introduce email y contraseña', 'error'); return; }
+  var btn = document.getElementById('btnEmailLogin');
+  btn.disabled = true;
+  var res = await supaSignInEmail(email, pass);
+  if (res.error) {
+    toast('Error: ' + res.error.message, 'error');
+    btn.disabled = false;
+  } else {
+    SUPA_USER = res.data.user;
+    hideLoginScreen();
+    await loadCfg(); applyTheme(); updateStravaUI();
+    await loadCachedActs(); updateWeekNav(); await loadWeekPlan();
+    checkCallback(); refreshDash(); updateUserUI();
+  }
+}
+
+async function handleEmailSignup() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { toast('Introduce email y contraseña', 'error'); return; }
+  var res = await supaSignUpEmail(email, pass);
+  if (res.error) toast('Error: ' + res.error.message, 'error');
+  else toast('Cuenta creada. Revisa tu email para confirmarla.', 'success');
+}
+
+async function handleSignOut() {
+  await supaSignOut();
+  SUPA_USER = null;
+  S.cfg = {}; S.acts = [];
+  showLoginScreen();
+}
+
+window.handleGoogleLogin = handleGoogleLogin;
+window.handleEmailLogin = handleEmailLogin;
+window.handleEmailSignup = handleEmailSignup;
+window.handleSignOut = handleSignOut;
+
+
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
@@ -1030,14 +1305,40 @@ var weekOffset = 0;
 // INIT
 // ═══════════════════════════════════════════
 window.onload = function() {
+  // Run app immediately with localStorage (works without Supabase too)
   try { loadCfg(); } catch(e) { console.error('loadCfg:', e); }
-  try { applyTheme(); } catch(e) { console.error('applyTheme:', e); }
-  try { updateStravaUI(); } catch(e) { console.error('updateStravaUI:', e); }
-  try { loadCachedActs(); } catch(e) { console.error('loadCachedActs:', e); }
-  try { updateWeekNav(); } catch(e) { console.error('updateWeekNav:', e); }
-  try { loadWeekPlan(); } catch(e) { console.error('loadWeekPlan:', e); }
-  try { checkCallback(); } catch(e) { console.error('checkCallback:', e); }
-  try { refreshDash(); } catch(e) { console.error('refreshDash:', e); }
+  try { applyTheme(); } catch(e) {}
+  try { updateStravaUI(); } catch(e) {}
+  try { loadCachedActs(); } catch(e) {}
+  try { updateWeekNav(); } catch(e) {}
+  try { loadWeekPlan(); } catch(e) {}
+  try { checkCallback(); } catch(e) {}
+  try { refreshDash(); } catch(e) {}
+
+  // Then check Supabase auth in background (non-blocking)
+  if (typeof initSupabase === 'function' && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    try { initSupabase(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
+    SUPA.auth.getSession().then(function(res) {
+      var session = res && res.data && res.data.session;
+      if (!session) {
+        showLoginScreen();
+        return;
+      }
+      SUPA_USER = session.user;
+      updateUserUI();
+      // Pull cloud data and refresh
+      pullFromSupabase().then(function() {
+        try { loadCfg(); } catch(e) {}
+        try { updateStravaUI(); } catch(e) {}
+        try { loadCachedActs(); } catch(e) {}
+        try { loadWeekPlan(); } catch(e) {}
+        try { refreshDash(); } catch(e) {}
+      });
+    }).catch(function(e) {
+      console.warn('Supabase session check failed:', e);
+      showLoginScreen();
+    });
+  }
 };
 
 // ═══════════════════════════════════════════
@@ -1060,8 +1361,8 @@ function toggleTheme() {
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-function loadCfg() {
-  var raw = localStorage.getItem('apex_cfg');
+async function loadCfg() {
+  var raw = await storeGet('apex_cfg');
   if (raw) { try { S.cfg = JSON.parse(raw); } catch(e) {} }
   var fields = { cfgClientId:'stravaClientId', cfgClientSecret:'stravaClientSecret', cfgGemini:'geminiKey', cfgLevel:'runLevel', cfgGoal:'runGoal' };
   for (var id in fields) {
@@ -1071,20 +1372,18 @@ function loadCfg() {
   var notesEl = document.getElementById('cfgNotes');
   if (notesEl && S.cfg.notes) notesEl.value = S.cfg.notes;
   var gcEl = document.getElementById('cfgGoalCustom');
-  if (gcEl && S.cfg.goalCustom) { gcEl.value = S.cfg.goalCustom; gcEl.style.display = 'block'; }
+  if (gcEl && S.cfg.goalCustom) { gcEl.value = S.cfg.goalCustom; gcEl.style.display='block'; }
   if (S.cfg.runDaysCount) {
-    var rd = document.getElementById('cfgRunDays'); var rl = document.getElementById('cfgRunDaysLabel');
-    if (rd) rd.value = S.cfg.runDaysCount;
-    if (rl) rl.textContent = S.cfg.runDaysCount + ' día' + (S.cfg.runDaysCount === 1 ? '' : 's') + ' / semana';
+    var rd=document.getElementById('cfgRunDays'), rl=document.getElementById('cfgRunDaysLabel');
+    if (rd) rd.value=S.cfg.runDaysCount;
+    if (rl) rl.textContent=S.cfg.runDaysCount+' día'+(S.cfg.runDaysCount===1?'':'s')+' / semana';
   }
-  if (S.cfg.gymDaysCount !== undefined) {
-    var gd = document.getElementById('cfgGymDays'); var gl = document.getElementById('cfgGymDaysLabel');
-    if (gd) gd.value = S.cfg.gymDaysCount;
-    if (gl) gl.textContent = S.cfg.gymDaysCount + ' día' + (S.cfg.gymDaysCount === 1 ? '' : 's') + ' / semana';
+  if (S.cfg.gymDaysCount!==undefined) {
+    var gd=document.getElementById('cfgGymDays'), gl=document.getElementById('cfgGymDaysLabel');
+    if (gd) gd.value=S.cfg.gymDaysCount;
+    if (gl) gl.textContent=S.cfg.gymDaysCount+' día'+(S.cfg.gymDaysCount===1?'':'s')+' / semana';
   }
 }
-
-function saveCfg() { localStorage.setItem('apex_cfg', JSON.stringify(S.cfg)); }
 
 function stepVal(id, delta) {
   var el = document.getElementById(id);
@@ -1262,9 +1561,9 @@ function goToToday() {
   loadWeekPlan();
 }
 
-function loadWeekPlan() {
+async function loadWeekPlan() {
   var key = planStorageKey(weekOffset);
-  var raw = localStorage.getItem(key) || localStorage.getItem('apex_plan');
+  var raw = await storeGet(key) || await storeGet('apex_plan');
   if (raw) { try { renderPlan(JSON.parse(raw)); } catch(e) {} }
 }
 
@@ -1353,8 +1652,8 @@ function loadActivities() {
   fetchPage(1);
 }
 
-function loadCachedActs() {
-  var raw = localStorage.getItem('apex_acts');
+async function loadCachedActs() {
+  var raw = await storeGet('apex_acts');
   if (raw) { try { S.acts = JSON.parse(raw); } catch(e) {} }
 }
 
@@ -1696,8 +1995,8 @@ function generatePlan() {
     raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
     var plan = JSON.parse(raw);
     var wkey = planStorageKey(weekOffset);
-    localStorage.setItem(wkey, JSON.stringify(plan));
-    localStorage.setItem('apex_plan', JSON.stringify(plan));
+    storeSet(wkey, JSON.stringify(plan));
+    storeSet('apex_plan', JSON.stringify(plan));
     renderPlan(plan);
     toast('Plan generado', 'success');
   }).catch(function(e) {
@@ -1817,14 +2116,19 @@ function renderPlan(plan) {
 // ═══════════════════════════════════════════
 // HISTORIAL
 // ═══════════════════════════════════════════
-function refreshHistorial() {
+async function refreshHistorial() {
   var el = document.getElementById('histContent'); if (!el) return;
   var allPlans = [];
-  for (var k in localStorage) {
-    if (k.indexOf('apex_plan_') === 0 && k !== 'apex_plan') {
-      try { allPlans.push({ date: new Date(k.replace('apex_plan_','')), plan: JSON.parse(localStorage.getItem(k)) }); } catch(e) {}
-    }
-  }
+  try {
+    var rows = await dbGetAllPlans();
+    rows.forEach(function(r) {
+      try {
+        var dateStr = r.key.replace('apex_plan_','');
+        var planData = typeof r.value === 'string' ? JSON.parse(r.value) : r.value;
+        allPlans.push({ date: new Date(dateStr), plan: planData });
+      } catch(e) {}
+    });
+  } catch(e) {}
   if (allPlans.length === 0) {
     el.innerHTML = '<div class="empty"><div class="empty-ico">'+ICO.bolt+'</div><div class="empty-title">Sin historial todavía</div><div class="empty-desc">Genera planes semanales para ir construyendo tu historial.</div></div>';
     return;
@@ -1883,255 +2187,10 @@ function refreshHistorial() {
 }
 
 
-// ═══ SUPABASE LAYER ═══
-// ═══════════════════════════════════════════════════════════════════
-// SUPABASE THIN SYNC LAYER
-// Strategy: keep localStorage as source of truth (all existing code
-// works unchanged), and silently sync to/from Supabase in background.
-// This means ZERO changes to existing functions.
-// ═══════════════════════════════════════════════════════════════════
 
-var SUPABASE_URL      = 'https://fqahszywvrblwhdikbwb.supabase.co';
-var SUPABASE_ANON_KEY = 'sb_publishable_VMEhLLIu_gEcy2Iym0dirA_SGdaRFZ-';
-
-var _sb = null;
-var _sbUser = null;
-
-// ── Init ────────────────────────────────────────────────────────────
-function sbInit() {
-  if (typeof window.supabase === 'undefined') return;
-  _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
-// ── Auth ────────────────────────────────────────────────────────────
-async function sbGetUser() {
-  if (!_sb) return null;
-  try {
-    var res = await _sb.auth.getUser();
-    _sbUser = (res.data && res.data.user) ? res.data.user : null;
-    return _sbUser;
-  } catch(e) { return null; }
-}
-
-async function sbHandleCallback() {
-  if (!_sb) return null;
-  try {
-    var res = await _sb.auth.getSession();
-    if (res.data && res.data.session) {
-      _sbUser = res.data.session.user;
-      return _sbUser;
-    }
-  } catch(e) {}
-  return null;
-}
-
-async function sbSignInGoogle() {
-  if (!_sb) return;
-  await _sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + window.location.pathname }
-  });
-}
-
-async function sbSignInEmail(email, pass) {
-  if (!_sb) return { error: { message: 'Supabase no inicializado' } };
-  return await _sb.auth.signInWithPassword({ email: email, password: pass });
-}
-
-async function sbSignUp(email, pass) {
-  if (!_sb) return { error: { message: 'Supabase no inicializado' } };
-  return await _sb.auth.signUp({ email: email, password: pass });
-}
-
-async function sbSignOut() {
-  if (!_sb) return;
-  await _sb.auth.signOut();
-  _sbUser = null;
-}
-
-// ── DB: single table apex_data (user_id, key, value) ────────────────
-async function sbGet(key) {
-  if (!_sb || !_sbUser) return null;
-  try {
-    var res = await _sb.from('apex_data').select('value')
-      .eq('user_id', _sbUser.id).eq('key', key).maybeSingle();
-    if (res.error || !res.data) return null;
-    return typeof res.data.value === 'string' ? res.data.value : JSON.stringify(res.data.value);
-  } catch(e) { return null; }
-}
-
-async function sbSet(key, value) {
-  if (!_sb || !_sbUser) return;
-  try {
-    var parsed;
-    try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
-    await _sb.from('apex_data').upsert(
-      { user_id: _sbUser.id, key: key, value: parsed, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,key' }
-    );
-  } catch(e) {}
-}
-
-async function sbGetAllPlans() {
-  if (!_sb || !_sbUser) return [];
-  try {
-    var res = await _sb.from('apex_data').select('key,value')
-      .eq('user_id', _sbUser.id).like('key', 'apex_plan_%').neq('key', 'apex_plan');
-    return (res.error || !res.data) ? [] : res.data;
-  } catch(e) { return []; }
-}
-
-// ── Pull from Supabase → localStorage (on login) ────────────────────
-async function sbPullAll() {
-  if (!_sb || !_sbUser) return;
-  try {
-    var res = await _sb.from('apex_data').select('key,value').eq('user_id', _sbUser.id);
-    if (res.error || !res.data) return;
-    res.data.forEach(function(row) {
-      var val = typeof row.value === 'string' ? row.value : JSON.stringify(row.value);
-      localStorage.setItem(row.key, val);
-    });
-  } catch(e) {}
-}
-
-// ── Push to Supabase when localStorage changes ───────────────────────
-// Wrap localStorage.setItem to auto-sync
-var _origSetItem = localStorage.setItem.bind(localStorage);
-localStorage.setItem = function(key, value) {
-  _origSetItem(key, value);
-  if (_sbUser && key.indexOf('apex_') === 0) {
-    sbSet(key, value);
-  }
-};
-
-// ── Auth UI helpers ──────────────────────────────────────────────────
-function sbShowLogin() {
-  var l = document.getElementById('sbLoginScreen');
-  var a = document.getElementById('sbAppShell');
-  if (l) l.style.display = 'flex';
-  if (a) a.style.display = 'none';
-}
-
-function sbHideLogin() {
-  var l = document.getElementById('sbLoginScreen');
-  var a = document.getElementById('sbAppShell');
-  if (l) l.style.display = 'none';
-  if (a) a.style.display = '';
-}
-
-function sbUpdateUserBar() {
-  var el = document.getElementById('sbUserEmail');
-  if (el && _sbUser) el.textContent = _sbUser.email || '';
-}
-
-async function sbHandleGoogleLogin() {
-  await sbSignInGoogle();
-}
-
-async function sbHandleEmailLogin() {
-  var email = (document.getElementById('sbEmail') || {}).value || '';
-  var pass  = (document.getElementById('sbPass')  || {}).value || '';
-  if (!email || !pass) { toast('Introduce email y contraseña', 'error'); return; }
-  var btn = document.getElementById('sbBtnLogin');
-  if (btn) btn.disabled = true;
-  var res = await sbSignInEmail(email.trim(), pass);
-  if (res.error) {
-    toast('Error: ' + res.error.message, 'error');
-    if (btn) btn.disabled = false;
-  } else {
-    _sbUser = res.data.user;
-    await sbPullAll();         // load cloud data into localStorage
-    sbHideLogin();
-    sbUpdateUserBar();
-    // Re-init app with fresh data
-    try { loadCfg(); } catch(e) {}
-    try { applyTheme(); } catch(e) {}
-    try { updateStravaUI(); } catch(e) {}
-    try { loadCachedActs(); } catch(e) {}
-    try { updateWeekNav(); } catch(e) {}
-    try { loadWeekPlan(); } catch(e) {}
-    try { refreshDash(); } catch(e) {}
-  }
-}
-
-async function sbHandleSignUp() {
-  var email = (document.getElementById('sbEmail') || {}).value || '';
-  var pass  = (document.getElementById('sbPass')  || {}).value || '';
-  if (!email || !pass) { toast('Introduce email y contraseña', 'error'); return; }
-  var res = await sbSignUp(email.trim(), pass);
-  if (res.error) toast('Error: ' + res.error.message, 'error');
-  else toast('Cuenta creada — revisa tu email para confirmarla', 'success');
-}
-
-async function sbHandleSignOut() {
-  await sbSignOut();
-  sbShowLogin();
-}
-
-// ── Override window.onload ───────────────────────────────────────────
-// We do this AFTER the app's own window.onload is defined,
-// so we can call the original and add auth on top.
-window.addEventListener('load', function() {
-  var overlay = document.getElementById('sbLoadOverlay');
-  function hide() { if (overlay) overlay.style.display = 'none'; }
-
-  // Always hide overlay after 2s max no matter what
-  setTimeout(hide, 2000);
-
-  sbInit();
-
-  // If Supabase not configured — just hide overlay, app already running
-  if (!_sb || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-    hide();
-    return;
-  }
-
-  // Show overlay while checking auth
-  if (overlay) overlay.style.display = 'flex';
-
-  // Check session with 2s timeout
-  var sessionDone = false;
-  function onSessionResult(user) {
-    if (sessionDone) return;
-    sessionDone = true;
-    hide();
-    if (!user) {
-      sbShowLogin();
-    } else {
-      _sbUser = user;
-      sbHideLogin();
-      sbUpdateUserBar();
-      sbPullAll().then(function() {
-        try { loadCfg(); } catch(e) {}
-        try { applyTheme(); } catch(e) {}
-        try { updateStravaUI(); } catch(e) {}
-        try { loadCachedActs(); } catch(e) {}
-        try { updateWeekNav(); } catch(e) {}
-        try { loadWeekPlan(); } catch(e) {}
-        try { refreshDash(); } catch(e) {}
-      }).catch(function() {
-        try { refreshDash(); } catch(e) {}
-      });
-    }
-  }
-
-  // Timeout fallback
-  setTimeout(function() { onSessionResult(null); }, 2000);
-
-  // Try to get session
-  _sb.auth.getSession().then(function(res) {
-    var user = res && res.data && res.data.session && res.data.session.user;
-    onSessionResult(user || null);
-  }).catch(function() { onSessionResult(null); });
-});
-
-
-window.sbHandleGoogleLogin = sbHandleGoogleLogin;
-window.sbHandleEmailLogin  = sbHandleEmailLogin;
-window.sbHandleSignUp      = sbHandleSignUp;
-window.sbHandleSignOut     = sbHandleSignOut;
-
+window.handleGoogleLogin = handleGoogleLogin;
+window.handleEmailLogin = handleEmailLogin;
+window.handleEmailSignup = handleEmailSignup;
+window.handleSignOut = handleSignOut;
 </script>
-</div><!-- /sbAppShell -->
-</body>
 </html>
